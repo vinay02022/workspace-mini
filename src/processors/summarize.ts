@@ -1,4 +1,4 @@
-import { isLlmAvailable, getOpenAIClient } from "@/lib/openai";
+import { isLlmAvailable, getGeminiModel } from "@/lib/gemini";
 import { StepProcessor } from "./types";
 
 function heuristicSummarize(input: string): string {
@@ -21,21 +21,11 @@ export const summarize: StepProcessor = async (input) => {
   }
 
   try {
-    const client = getOpenAIClient();
-    const response = await client.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "Summarize the following text concisely in 2-3 sentences.",
-        },
-        { role: "user", content: input },
-      ],
-      max_tokens: 300,
-      temperature: 0.3,
-    });
-
-    const output = response.choices[0]?.message?.content?.trim();
+    const model = getGeminiModel();
+    const result = await model.generateContent(
+      `Summarize the following text concisely in 2-3 sentences.\n\n${input}`
+    );
+    const output = result.response.text().trim();
     if (output) {
       return { output, usedLlm: true };
     }

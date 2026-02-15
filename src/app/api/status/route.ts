@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { isLlmAvailable } from "@/lib/openai";
+import { isLlmAvailable } from "@/lib/gemini";
 
 export async function GET() {
   // Check backend
@@ -19,7 +19,7 @@ export async function GET() {
   const llm = {
     status: isLlmAvailable() ? ("ok" as const) : ("unavailable" as const),
     message: isLlmAvailable()
-      ? "OpenAI API key configured"
+      ? "Gemini API key configured"
       : "No API key set - using heuristic fallbacks",
   };
 

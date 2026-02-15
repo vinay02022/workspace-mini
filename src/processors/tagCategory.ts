@@ -1,4 +1,4 @@
-import { isLlmAvailable, getOpenAIClient } from "@/lib/openai";
+import { isLlmAvailable, getGeminiModel } from "@/lib/gemini";
 import { StepProcessor } from "./types";
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
@@ -41,22 +41,11 @@ export const tagCategory: StepProcessor = async (input) => {
   }
 
   try {
-    const client = getOpenAIClient();
-    const response = await client.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content:
-            'Categorize the following text with relevant tags. Return in the format "Tags: tag1, tag2, tag3". Use 1-3 tags from these categories: technology, business, science, health, education, politics, environment, or suggest a more specific tag if appropriate.',
-        },
-        { role: "user", content: input },
-      ],
-      max_tokens: 100,
-      temperature: 0.3,
-    });
-
-    const output = response.choices[0]?.message?.content?.trim();
+    const model = getGeminiModel();
+    const result = await model.generateContent(
+      `Categorize the following text with relevant tags. Return in the format "Tags: tag1, tag2, tag3". Use 1-3 tags from these categories: technology, business, science, health, education, politics, environment, or suggest a more specific tag if appropriate.\n\n${input}`
+    );
+    const output = result.response.text().trim();
     if (output) {
       return { output, usedLlm: true };
     }

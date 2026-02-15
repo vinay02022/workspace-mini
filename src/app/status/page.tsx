@@ -72,7 +72,7 @@ export default function StatusPage() {
             }
           />
           <StatusIndicator
-            label="LLM (OpenAI)"
+            label="LLM (Gemini)"
             status={status.llm.status}
             message={status.llm.message}
           />

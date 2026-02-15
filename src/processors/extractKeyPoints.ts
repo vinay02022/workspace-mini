@@ -1,4 +1,4 @@
-import { isLlmAvailable, getOpenAIClient } from "@/lib/openai";
+import { isLlmAvailable, getGeminiModel } from "@/lib/gemini";
 import { StepProcessor } from "./types";
 
 function heuristicExtractKeyPoints(input: string): string {
@@ -22,22 +22,11 @@ export const extractKeyPoints: StepProcessor = async (input) => {
   }
 
   try {
-    const client = getOpenAIClient();
-    const response = await client.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Extract the key points from the following text. Return them as a bullet-point list using '- ' prefix for each point.",
-        },
-        { role: "user", content: input },
-      ],
-      max_tokens: 500,
-      temperature: 0.3,
-    });
-
-    const output = response.choices[0]?.message?.content?.trim();
+    const model = getGeminiModel();
+    const result = await model.generateContent(
+      `Extract the key points from the following text. Return them as a bullet-point list using '- ' prefix for each point.\n\n${input}`
+    );
+    const output = result.response.text().trim();
     if (output) {
       return { output, usedLlm: true };
     }

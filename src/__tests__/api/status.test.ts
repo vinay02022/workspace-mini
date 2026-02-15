@@ -7,8 +7,8 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
-// Mock openai
-jest.mock("@/lib/openai", () => ({
+// Mock gemini
+jest.mock("@/lib/gemini", () => ({
   isLlmAvailable: jest.fn().mockReturnValue(false),
 }));
 
@@ -37,7 +37,7 @@ describe("GET /api/status", () => {
   });
 
   it("returns llm ok when api key is set", async () => {
-    const { isLlmAvailable } = require("@/lib/openai");
+    const { isLlmAvailable } = require("@/lib/gemini");
     (isLlmAvailable as jest.Mock).mockReturnValue(true);
 
     const response = await GET();
