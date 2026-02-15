@@ -1,32 +1,71 @@
 # Workflow Builder Lite
 
-A full-stack web application for creating and running text-processing workflows. Build pipelines of 2-4 steps, execute them on any text, and view detailed per-step outputs with run history.
+A production-ready, full-stack workflow engine that lets users design multi-step text-processing pipelines, execute them in real time, and track every run with detailed per-step observability. Built with a modern React/Next.js stack and backed by an LLM-powered processing layer with intelligent heuristic fallbacks.
 
-## Features
+> **Live demo flow:** Create a pipeline in `/builder` &rarr; Run it on any text in `/run` &rarr; Inspect per-step outputs &rarr; Browse history in `/history`
 
-- **Workflow Builder** - Create workflows with 2-4 configurable processing steps
-- **Pipeline Runner** - Execute workflows on input text with real-time step-by-step output
-- **Run History** - Browse recent runs with expandable step details
-- **System Status** - Health monitoring for backend, database, and LLM availability
-- **LLM + Heuristic Fallback** - Uses OpenAI when available, gracefully falls back to heuristic processing
+---
+
+## Key Highlights
+
+- **Visual Pipeline Builder** &mdash; Drag-and-drop-style step management (add, remove, reorder) with real-time validation (2-4 steps enforced)
+- **Dual-Mode Processing** &mdash; Each LLM step has a hand-tuned heuristic fallback, so the app is fully functional with or without an API key
+- **Per-Step Observability** &mdash; Every run records input/output per step, execution time, and whether LLM or heuristic was used
+- **Production Architecture** &mdash; Standalone Docker builds, Prisma ORM with migrations, singleton DB clients, proper error boundaries
+- **Type-Safe End to End** &mdash; TypeScript across frontend, backend, API contracts, and database layer (Prisma-generated types)
+
+---
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
-- **Backend**: Next.js API Routes, Prisma ORM
-- **Database**: SQLite
-- **LLM**: OpenAI SDK (optional)
-- **Testing**: Jest + ts-jest
-- **Containerization**: Docker + Docker Compose
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Next.js 16 (App Router), React 19 |
+| **Language** | TypeScript (strict mode) |
+| **Styling** | Tailwind CSS 4 |
+| **Database** | SQLite via Prisma ORM (zero-config, file-based) |
+| **LLM** | Google Gemini 2.0 Flash (optional) |
+| **Testing** | Jest + ts-jest (unit + integration) |
+| **Infra** | Docker multi-stage build, Docker Compose |
+
+---
+
+## Architecture
+
+```
+Client (React)  -->  Next.js API Routes  -->  Processor Pipeline  -->  Gemini / Heuristic
+                           |
+                     Prisma ORM  -->  SQLite
+```
+
+**Processor Registry Pattern** &mdash; Each step type implements a `StepProcessor` interface. A central registry maps type strings to processor functions. The pipeline runner chains them sequentially, feeding each step's output as the next step's input.
+
+**LLM Guard Pattern** &mdash; `isLlmAvailable()` checks the env before any API call. Every LLM processor wraps calls in try/catch and falls back to heuristics on failure. Zero crashes from missing keys or API outages.
+
+---
 
 ## Step Types
 
-| Step | Description | LLM Mode | Fallback Mode |
-|------|-------------|-----------|---------------|
-| Clean Text | Trim, normalize whitespace, collapse blank lines | N/A (pure heuristic) | N/A |
-| Summarize | GPT-powered text summarization | OpenAI GPT-3.5 | First 3 sentences |
-| Extract Key Points | Extract bullet points from text | OpenAI GPT-3.5 | Longest substantive sentences |
-| Tag Category | Categorize text with relevant tags | OpenAI GPT-3.5 | Keyword-based scoring |
+| Step | What It Does | LLM Mode | Heuristic Fallback |
+|------|-------------|----------|-------------------|
+| **Clean Text** | Normalize whitespace, trim lines, collapse blanks | Pure heuristic | N/A |
+| **Summarize** | Condense text to 2-3 key sentences | Gemini 2.0 Flash | First 3 sentences extraction |
+| **Extract Key Points** | Pull structured bullet points | Gemini 2.0 Flash | Top-5 longest substantive sentences |
+| **Tag Category** | Auto-categorize with topic tags | Gemini 2.0 Flash | Keyword frequency scoring across 7 domains |
+
+---
+
+## Pages
+
+| Route | Purpose |
+|-------|---------|
+| `/` | Landing page with feature overview |
+| `/builder` | Create and manage workflows (2-4 step pipelines) |
+| `/run` | Select workflow, paste text, execute, view step-by-step results |
+| `/history` | Browse last 5 runs with expandable details |
+| `/status` | Live health dashboard (Backend, DB, LLM) with 30s auto-refresh |
+
+---
 
 ## Getting Started
 
@@ -35,47 +74,52 @@ A full-stack web application for creating and running text-processing workflows.
 - Node.js 20+
 - npm
 
-### Installation
+### Quick Start
 
 ```bash
-# Clone the repository
-git clone <repo-url>
+# Clone and install
+git clone https://github.com/vinay02022/workspace-mini.git
 cd workspace-mini
-
-# Install dependencies
 npm install
 
-# Set up environment
+# Setup environment
 cp .env.example .env
 
-# Run database migrations
+# Initialize database
 npx prisma migrate dev
 
-# Start the development server
+# Start dev server
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000)
 
-### Optional: Enable LLM Features
+### Enable LLM Features (Optional)
 
-Add your OpenAI API key to `.env`:
+Add your Google Gemini API key to `.env`:
 
+```env
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
-OPENAI_API_KEY=sk-your-key-here
-```
 
-Without an API key, all LLM-powered steps fall back to heuristic processing.
+Without a key, all LLM steps gracefully fall back to heuristic processing. The `/status` page shows LLM availability in real time.
 
-## Docker
+---
 
-```bash
-# Build and run
-docker compose up --build
+## API Reference
 
-# With OpenAI key
-OPENAI_API_KEY=sk-your-key docker compose up --build
-```
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/status` | Health check (backend, database, LLM) |
+| `GET` | `/api/workflows` | List all workflows with steps |
+| `POST` | `/api/workflows` | Create workflow (validates 2-4 steps) |
+| `GET` | `/api/workflows/[id]` | Get single workflow |
+| `PUT` | `/api/workflows/[id]` | Update workflow |
+| `DELETE` | `/api/workflows/[id]` | Delete workflow (cascades) |
+| `POST` | `/api/run` | Execute pipeline on input text |
+| `GET` | `/api/runs?limit=N` | Fetch recent runs with step outputs |
+
+---
 
 ## Testing
 
@@ -83,37 +127,54 @@ OPENAI_API_KEY=sk-your-key docker compose up --build
 npm test
 ```
 
+**11 tests across 2 suites:**
+- `cleanText` processor &mdash; 7 tests covering trimming, normalization, edge cases
+- Status API &mdash; 4 tests covering health check responses and LLM state
+
+---
+
+## Docker
+
+```bash
+# Build and run
+docker compose up --build
+
+# With Gemini API key
+GEMINI_API_KEY=your-key docker compose up --build
+```
+
+Multi-stage Dockerfile (deps &rarr; build &rarr; runner) produces a minimal Alpine-based production image.
+
+---
+
 ## Project Structure
 
 ```
 src/
 ├── app/                  # Next.js App Router pages + API routes
-│   ├── api/              # REST API endpoints
+│   ├── api/              # 6 REST API endpoints
 │   ├── builder/          # Workflow creation page
 │   ├── run/              # Pipeline execution page
 │   ├── history/          # Run history page
-│   └── status/           # System health page
+│   └── status/           # System health dashboard
 ├── components/           # React components
-│   ├── ui/               # Reusable primitives (Button, Card, Badge, etc.)
-│   ├── layout/           # Navbar, Footer
-│   ├── builder/          # Workflow form components
-│   ├── run/              # Input/output panels
-│   ├── history/          # Run cards
-│   └── status/           # Health indicators
-├── lib/                  # Shared utilities (Prisma, OpenAI, constants)
-├── processors/           # Step processor implementations + pipeline runner
+│   ├── ui/               # Reusable primitives (Button, Card, Badge, Select, TextArea)
+│   ├── layout/           # Navbar (sticky, active states), Footer
+│   ├── builder/          # StepCard, StepList, WorkflowForm
+│   ├── run/              # InputPanel, OutputPanel, StepOutputCard
+│   ├── history/          # RunCard (expandable)
+│   └── status/           # StatusIndicator (green/red/amber)
+├── lib/                  # Prisma singleton, Gemini client, constants
+├── processors/           # 4 step processors + registry + pipeline runner
 └── __tests__/            # Jest test suites
 ```
 
-## API Endpoints
+---
 
-| Method | Route | Description |
-|--------|-------|-------------|
-| GET | `/api/status` | System health check |
-| GET | `/api/workflows` | List all workflows |
-| POST | `/api/workflows` | Create a workflow |
-| GET | `/api/workflows/[id]` | Get a single workflow |
-| PUT | `/api/workflows/[id]` | Update a workflow |
-| DELETE | `/api/workflows/[id]` | Delete a workflow |
-| POST | `/api/run` | Execute a workflow pipeline |
-| GET | `/api/runs` | Get recent run history |
+## Database Schema
+
+4 models with cascading relationships:
+
+- **Workflow** &rarr; has many **Steps** (ordered, typed)
+- **Workflow** &rarr; has many **Runs**
+- **Run** &rarr; has many **StepOutputs** (per-step input, output, timing, LLM flag)
