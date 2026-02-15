@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  steps       Step[]
+  runs        Run[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Step {
+  id         String   @id @default(cuid())
+  type       String   // clean_text | summarize | extract_key_points | tag_category
+  order      Int
+  config     String   @default("{}") // JSON string for step-specific config
+  workflowId String
+  workflow   Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+}
+
+model Run {
+  id          String       @id @default(cuid())
+  input       String
+  status      String       @default("pending") // pending | running | completed | failed
+  error       String?
+  workflowId  String
+  workflow    Workflow      @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  stepOutputs StepOutput[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model StepOutput {
+  id         String @id @default(cuid())
+  runId      String
+  run        Run    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stepOrder  Int
+  stepType   String // denormalized for easy display
+  input      String
+  output     String
+  usedLlm    Boolean @default(false)
+  durationMs Int     @default(0)
+}
