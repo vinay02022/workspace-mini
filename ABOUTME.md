@@ -43,7 +43,7 @@ Currently working as a Full Stack Engineer at Crio.Do.
 - Git / GitHub
 - Docker
 - Basic AWS
-- AI API integrations (OpenAI)
+- AI API integrations (Google Gemini)
 
 ---
 
@@ -55,9 +55,9 @@ I enjoy building systems that are clean, understandable, and scalable. I prefer 
 
 ## Contact
 
-Email: [your email here]
-GitHub: [your GitHub link]
-LinkedIn: [your LinkedIn link]
+Email: vinay.work25@gmail.com
+GitHub: https://github.com/vinay02022
+LinkedIn: https://www.linkedin.com/in/vinay-pandey
 
 ---
 
@@ -73,7 +73,7 @@ This project was built as a demonstration of full-stack development skills, show
 - **Processor Registry Pattern** makes it easy to add new step types without modifying existing code
 
 #### LLM Integration
-- The application is fully functional without an OpenAI API key
+- The application is fully functional without a Gemini API key
 - Every LLM-powered processor has a heuristic fallback that produces reasonable results
 - The `isLlmAvailable()` guard prevents unnecessary API calls when no key is configured
 - All LLM calls are wrapped in try/catch to gracefully degrade on errors
@@ -87,4 +87,4 @@ This project was built as a demonstration of full-stack development skills, show
 #### Testing Strategy
 - Unit tests for pure processor logic (cleanText)
 - Integration tests for API routes (status endpoint)
-- Mocking of external dependencies (Prisma, OpenAI) for isolated testing
+- Mocking of external dependencies (Prisma, Gemini) for isolated testing

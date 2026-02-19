@@ -8,7 +8,7 @@ This document captures the key prompts and instructions used to build the Workfl
 
 The project was built from a comprehensive implementation plan that specified:
 
-1. **Tech Stack**: Next.js 14+ App Router, TypeScript, Tailwind CSS, Prisma + SQLite, OpenAI SDK, Jest, Docker
+1. **Tech Stack**: Next.js 14+ App Router, TypeScript, Tailwind CSS, Prisma + SQLite, Google Gemini SDK, Jest, Docker
 2. **Project Structure**: Complete file tree with all directories and files
 3. **Database Schema**: 4 Prisma models (Workflow, Step, Run, StepOutput) with relationships
 4. **API Routes**: 6 endpoints for workflows CRUD, pipeline execution, run history, and health status

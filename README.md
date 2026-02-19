@@ -127,8 +127,13 @@ Without a key, all LLM steps gracefully fall back to heuristic processing. The `
 npm test
 ```
 
-**11 tests across 2 suites:**
+**41 tests across 7 suites:**
 - `cleanText` processor &mdash; 7 tests covering trimming, normalization, edge cases
+- `summarize` processor &mdash; 5 tests covering sentence splitting, edge cases
+- `extractKeyPoints` processor &mdash; 5 tests covering bullet extraction, filtering, limits
+- `tagCategory` processor &mdash; 7 tests covering all category domains, multi-tag, fallback
+- Pipeline Runner &mdash; 6 integration tests covering chaining, ordering, timing, error handling
+- Workflows API &mdash; 7 tests covering validation, creation, and input limits
 - Status API &mdash; 4 tests covering health check responses and LLM state
 
 ---
